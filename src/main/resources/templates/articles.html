@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>文章管理</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .d-flex {
+            display: flex;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="my-4">文章管理</h1>
+
+    <div class="mb-3">
+        <input type="text" id="searchKeyword" class="form-control" placeholder="搜尋文章（標題或內容）">
+        <button id="searchBtn" class="btn btn-primary mt-2">搜尋</button>
+    </div>
+
+    <button class="btn btn-success my-3" id="addArticleBtn" style="float:right">新增文章</button>
+
+    <!-- 新增文章 Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">新增文章</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        <div class="mb-3">
+                            <label for="addTitle" class="form-label">標題</label>
+                            <input type="text" class="form-control" id="addTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addContent" class="form-label">內文</label>
+                            <input type="text" class="form-control" id="addContent" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addImageUrl" class="form-label">圖片 URL</label>
+                            <input type="text" class="form-control" id="addImageUrl" placeholder="輸入圖片 URL">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="saveAddBtn">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>圖片</th>
+            <th>標題</th>
+            <th>內文</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody id="articlesTable">
+        </tbody>
+    </table>
+
+    <!-- 編輯文章 Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">編輯文章</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <div class="mb-3">
+                            <label for="editTitle" class="form-label">標題</label>
+                            <input type="text" class="form-control" id="editTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editContent" class="form-label">內文</label>
+                            <input type="text" class="form-control" id="editContent" required>
+                        </div>
+                        <!--            <div class="mb-3">-->
+                        <!--              <label for="editImage" class="form-label">上傳圖片</label>-->
+                        <!--              <input type="file" class="form-control" id="editImage">-->
+                        <!--            </div>-->
+                        <div class="mb-3">
+                            <label for="editImageUrl" class="form-label">圖片 URL</label>
+                            <input type="text" class="form-control" id="editImageUrl" placeholder="輸入圖片 URL">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="saveEditBtn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 查看文章 Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalLabel">查看文章</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>標題：</strong> <span id="viewTitle"></span></p>
+                <p><strong>內文：</strong> <span id="viewContent"></span></p>
+                <p><strong>圖片：</strong> <img id="viewImage" class="img-fluid" alt="圖片"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="deleteToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                文章已刪除。
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<nav aria-label="文章分頁" class="mt-3">
+    <ul class="pagination justify-content-center" id="pagination">
+    </ul>
+</nav>
+
+
+<script>
+
+    let currentPage = 1;
+    let totalPages = 0;
+    const pageSize = 6; // 每頁顯示的文章數
+
+    // 新增按鈕
+    $('#addArticleBtn').click(function () {
+        $('#addModal').modal('show');
+    });
+
+    $('#saveAddBtn').click(function () {
+        const formData = {
+            title: $('#addTitle').val(),
+            content: $('#addContent').val(),
+            imageUrl: $('#addImageUrl').val()
+        };
+
+        $.ajax({
+            url: '/admin/articles',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function () {
+                // 隱藏 Modal
+                $('#addModal').modal('hide');
+
+                // 清空表單內容
+                $('#addForm')[0].reset();
+
+                // 刷新文章列表
+                fetchArticles();
+            },
+            error: function () {
+                alert('新增失敗');
+            }
+        });
+    });
+
+    function fetchArticles(page = 1, keyword = '') {
+        const offset = (page - 1) * pageSize;
+        $.ajax({
+            url: `/admin/articles?limit=${pageSize}&offset=${offset}&search=${keyword}`,
+            method: 'GET',
+            success: function (data) {
+                renderArticles(data);
+                renderPagination(data.total, page, keyword);
+            },
+            error: function (err) {
+                console.error("API 請求失敗：", err);
+            }
+        });
+    }
+
+    function renderPagination(totalItems, currentPage, keyword = '') {
+        totalPages = Math.ceil(totalItems / pageSize);
+        const pagination = $('#pagination');
+        pagination.empty();
+
+        // 上一頁按鈕
+        const prevDisabled = currentPage === 1 ? 'disabled' : '';
+        pagination.append(`<li class="page-item ${prevDisabled}">
+    <a class="page-link" href="#" data-page="${currentPage - 1}" data-keyword="${keyword}">上一頁</a>
+  </li>`);
+
+        // 頁碼按鈕
+        for (let i = 1; i <= totalPages; i++) {
+            const active = currentPage === i ? 'active' : '';
+            pagination.append(`<li class="page-item ${active}">
+      <a class="page-link" href="#" data-page="${i}" data-keyword="${keyword}">${i}</a>
+    </li>`);
+        }
+
+        // 下一頁按鈕
+        const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+        pagination.append(`<li class="page-item ${nextDisabled}">
+    <a class="page-link" href="#" data-page="${currentPage + 1}" data-keyword="${keyword}">下一頁</a>
+  </li>`);
+    }
+
+    // 分頁按鈕
+    $(document).on('click', '.page-link', function (e) {
+        e.preventDefault();
+        const page = $(this).data('page');
+        const keyword = $(this).data('keyword') || '';
+        if (page >= 1 && page <= totalPages) {
+            fetchArticles(page, keyword);
+        }
+    });
+
+    function searchArticles() {
+        const keyword = $('#searchKeyword').val();
+        $.ajax({
+            url: `/admin/articles`,
+            method: 'GET',
+            success: function (data) {
+                renderArticles(data);
+            }
+        });
+    }
+
+    function renderArticles(data) {
+        let html = '';
+        data.results.forEach(article => {
+            html += `
+      <tr>
+        <td><img src="${article.imageUrl}" alt="圖片" class="img-thumbnail" style="max-width: 100px;"></td>
+        <td>${article.title.substring(0, 15)}${article.title.length > 15 ? '...' : ''}</td>
+        <td>${article.content.substring(0, 30)}${article.content.length > 30 ? '...' : ''}</td>
+        <td>
+          <div class="d-flex gap-2">
+            <button class="btn btn-info btn-sm view-btn"
+                    data-id="${article.articleId}">
+              查看
+            </button>
+            <button class="btn btn-warning btn-sm edit-btn"
+                    data-id="${article.articleId}"
+                    data-title="${article.title}"
+                    data-content="${article.content}"
+                    data-image="${article.imageUrl}">
+              編輯
+            </button>
+            <button class="btn btn-danger btn-sm" data-id="${article.articleId}">刪除</button>
+          </div>
+        </td>
+      </tr>
+    `;
+        });
+        $('#articlesTable').html(html);
+    }
+
+    // 查看按鈕點擊事件
+    $(document).on('click', '.view-btn', function () {
+        const id = $(this).data('id');
+
+        $.ajax({
+            url: `/admin/articles/${id}`,
+            method: 'GET',
+            success: function (data) {
+                $('#viewTitle').text(data.title);
+                $('#viewContent').text(data.content);
+                $('#viewImage').attr('src', data.imageUrl);
+
+                $('#viewModal').modal('show');
+            },
+            error: function () {
+                alert('無法加載文章資料');
+            }
+        });
+    });
+
+    // 編輯按鈕
+    $(document).on('click', '.edit-btn', function () {
+        const id = $(this).data('id');
+        const title = $(this).data('title');
+        const content = $(this).data('content');
+        const imageUrl = $(this).data('image');
+
+        $('#editTitle').val(title);
+        $('#editContent').val(content);
+        $('#editImageUrl').val(imageUrl);
+
+        $('#editModal').data('id', id);
+
+        $('#editModal').modal('show');
+    });
+
+    $('#saveEditBtn').click(function () {
+        const id = $('#editModal').data('id');
+        const formData = {
+            title: $('#editTitle').val(),
+            content: $('#editContent').val(),
+            imageUrl: $('#editImageUrl').val()
+        };
+
+        // 發送更新請求
+        $.ajax({
+            url: `/admin/articles/${id}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function () {
+                // 隱藏編輯 Modal
+                $('#editModal').modal('hide');
+
+                // 刷新文章列表
+                fetchArticles();
+            },
+            error: function () {
+                alert('更新失敗');
+            }
+        });
+    });
+
+    // 刪除按鈕
+    $(document).on('click', '.btn-danger', function () {
+        const id = $(this).data('id');
+
+        if (confirm('確定要刪除此文章嗎？')) {
+            $.ajax({
+                url: `/admin/articles/${id}`,
+                method: 'DELETE',
+                success: function () {
+                    // 顯示 Toast 通知
+                    const deleteToast = new bootstrap.Toast($('#deleteToast'));
+                    deleteToast.show();
+
+                    // 刷新文章列表
+                    fetchArticles();
+                },
+                error: function () {
+                    alert('刪除失敗');
+                }
+            });
+        }
+    });
+
+    $(document).ready(function () {
+        fetchArticles();
+        // $('#searchBtn').click(searchArticles);
+        $('#searchBtn').click(function () {
+            const keyword = $('#searchKeyword').val();
+            fetchArticles(1, keyword); // 從第1頁開始顯示搜尋結果
+        });
+    });
+</script>
+</body>
+</html>
