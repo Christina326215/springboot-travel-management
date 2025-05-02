@@ -1,10 +1,10 @@
 ### Spring Boot Travel Management Project
 
-#### 💡 Project Description
+#### Project Description
 
 ##### A backend management system for travel platform, developed with Spring Boot. Provides travel destination CRUD and keyword search.
 
-#### 🛠️ Tech Stack
+#### Tech Stack
 
 ##### Java 17
 
@@ -14,7 +14,7 @@
 
 ##### Thymeleaf / Bootstrap
 
-#### 🔄 Features
+#### Features
 
 ##### Travel destination management (Create, Read, Update, Delete)
 
@@ -22,7 +22,7 @@
 
 ##### Thymeleaf-based page rendering
 
-#### 🔹 How to Run
+#### How to Run
 
 ##### Clone repository
 ###### git clone https://github.com/Christina326215/springboot-travel-management.git
